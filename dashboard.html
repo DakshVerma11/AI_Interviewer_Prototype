@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Interviewer - Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            padding: 30px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .user-info {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .logout-btn {
+            float: right;
+            background: #ff4444;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .card h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e1e1;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            margin-right: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(45deg, #56ab2f, #a8e6cf);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+        }
+
+        .error {
+            background: #ff4444;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .success {
+            background: #44ff44;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .interview-status {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .status-ready {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status-not-ready {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .profile-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <button class="logout-btn" onclick="logout()">Logout</button>
+            <h1>🎯 AI Interviewer Dashboard</h1>
+            <div class="user-info">
+                Welcome, <span id="username">Loading...</span>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>📋 Profile Setup</h2>
+            <div id="errorMessage" class="error"></div>
+            <div id="successMessage" class="success"></div>
+            
+            <div id="profileInfo" class="profile-info hidden">
+                <h3>Current Profile:</h3>
+                <p><strong>Role:</strong> <span id="currentRole"></span></p>
+                <p><strong>Resume:</strong> <span id="currentResume"></span></p>
+            </div>
+
+            <form id="profileForm">
+                <div class="form-group">
+                    <label for="role">Role Applying For</label>
+                    <input type="text" id="role" name="role" placeholder="e.g., Data Analyst, Software Engineer" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="resume">Upload Resume (PDF)</label>
+                    <input type="file" id="resume" name="resume" accept=".pdf" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Save Profile</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <h2>🚀 Interview</h2>
+            
+            <div id="interviewStatus" class="interview-status status-not-ready">
+                Checking interview status...
+            </div>
+
+            <div id="interviewSection" class="hidden">
+                <p>Your personalized interview is ready! Click below to start.</p>
+                <br>
+                <button class="btn btn-success" onclick="startInterview()">Start Interview</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>📊 Previous Interviews</h2>
+            <div id="sessionsList">
+                Loading previous interviews...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+
+        // Load user data on page load
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadCurrentUser();
+            await loadProfile();
+            await checkInterviewStatus();
+            await loadSessions();
+        });
+
+        async function loadCurrentUser() {
+            try {
+                const response = await fetch('/api/current-user');
+                const data = await response.json();
+                
+                if (data.user) {
+                    currentUser = data.user;
+                    document.getElementById('username').textContent = data.user.username;
+                } else {
+                    window.location.href = '/login';
+                }
+            } catch (error) {
+                console.error('Error loading user:', error);
+                window.location.href = '/login';
+            }
+        }
+
+        async function loadProfile() {
+            try {
+                const response = await fetch('/api/user-profile');
+                const data = await response.json();
+                
+                if (data.profile) {
+                    document.getElementById('profileInfo').classList.remove('hidden');
+                    document.getElementById('currentRole').textContent = data.profile.role;
+                    document.getElementById('currentResume').textContent = data.profile.resume_filename;
+                    document.getElementById('role').value = data.profile.role;
+                }
+            } catch (error) {
+                console.error('Error loading profile:', error);
+            }
+        }
+
+        async function checkInterviewStatus() {
+            try {
+                const response = await fetch('/api/questions');
+                const data = await response.json();
+                
+                const statusDiv = document.getElementById('interviewStatus');
+                const interviewSection = document.getElementById('interviewSection');
+                
+                if (data.error === 'INTERVIEW_NOT_READY') {
+                    statusDiv.className = 'interview-status status-not-ready';
+                    statusDiv.textContent = 'Please wait, your interview isn\'t ready yet. Questions file not found.';
+                    interviewSection.classList.add('hidden');
+                } else if (data.length > 0) {
+                    statusDiv.className = 'interview-status status-ready';
+                    statusDiv.textContent = `Interview ready! ${data.length} questions available.`;
+                    interviewSection.classList.remove('hidden');
+                } else {
+                    statusDiv.className = 'interview-status status-not-ready';
+                    statusDiv.textContent = 'No questions available for interview.';
+                    interviewSection.classList.add('hidden');
+                }
+            } catch (error) {
+                console.error('Error checking interview status:', error);
+                const statusDiv = document.getElementById('interviewStatus');
+                statusDiv.className = 'interview-status status-not-ready';
+                statusDiv.textContent = 'Error checking interview status.';
+            }
+        }
+
+        async function loadSessions() {
+            try {
+                const response = await fetch('/api/user-sessions');
+                const sessions = await response.json();
+                
+                const sessionsList = document.getElementById('sessionsList');
+                
+                if (sessions.length === 0) {
+                    sessionsList.innerHTML = '<p>No previous interviews found.</p>';
+                    return;
+                }
+                
+                let html = '<div style="max-height: 300px; overflow-y: auto;">';
+                sessions.forEach(session => {
+                    html += `
+                        <div style="border: 1px solid #ddd; padding: 15px; margin-bottom: 10px; border-radius: 8px;">
+                            <strong>Session:</strong> ${session.session_id}<br>
+                            <strong>Date:</strong> ${new Date(session.start_time).toLocaleDateString()}<br>
+                            <strong>Duration:</strong> ${session.duration_formatted}<br>
+                            <strong>Questions:</strong> ${session.questions_answered}/${session.total_questions}<br>
+                            <strong>Status:</strong> ${session.completed ? 'Completed' : 'Incomplete'}<br>
+                            ${session.role_applied ? `<strong>Role:</strong> ${session.role_applied}<br>` : ''}
+                            ${session.file_size_mb ? `<strong>File Size:</strong> ${session.file_size_mb} MB` : ''}
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                
+                sessionsList.innerHTML = html;
+            } catch (error) {
+                console.error('Error loading sessions:', error);
+                document.getElementById('sessionsList').innerHTML = '<p>Error loading interview history.</p>';
+            }
+        }
+
+        // Profile form submission
+        document.getElementById('profileForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            formData.append('role', document.getElementById('role').value);
+            formData.append('resume', document.getElementById('resume').files[0]);
+            
+            try {
+                const response = await fetch('/api/upload-resume', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showSuccess('Profile updated successfully!');
+                    await loadProfile();
+                } else {
+                    showError(data.error || 'Failed to update profile');
+                }
+            } catch (error) {
+                showError('Network error. Please try again.');
+            }
+        });
+
+        function startInterview() {
+            window.location.href = '/interview';
+        }
+
+        async function logout() {
+            try {
+                await fetch('/api/logout', { method: 'POST' });
+                window.location.href = '/login';
+            } catch (error) {
+                window.location.href = '/login';
+            }
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            document.getElementById('successMessage').style.display = 'none';
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.getElementById('successMessage');
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+            document.getElementById('errorMessage').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
