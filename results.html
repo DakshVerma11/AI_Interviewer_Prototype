@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Interviewer - Results</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            padding: 30px;
+            margin-bottom: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9em;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .card h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        .score-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .score-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            border-left: 5px solid #667eea;
+        }
+
+        .score-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .score-good {
+            color: #28a745;
+        }
+
+        .score-warning {
+            color: #ffc107;
+        }
+
+        .score-danger {
+            color: #dc3545;
+        }
+
+        .score-label {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .cheating-status {
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .cheating-detected {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+        }
+
+        .no-cheating {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+        }
+
+        .details-section {
+            margin-top: 20px;
+        }
+
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .detail-label {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .detail-value {
+            color: #666;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #666;
+            font-size: 1.2em;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .progress-bar {
+            background: #e9ecef;
+            border-radius: 10px;
+            height: 20px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .progress-good {
+            background: linear-gradient(45deg, #28a745, #20c997);
+        }
+
+        .progress-warning {
+            background: linear-gradient(45deg, #ffc107, #fd7e14);
+        }
+
+        .progress-danger {
+            background: linear-gradient(45deg, #dc3545, #e83e8c);
+        }
+
+        .movements-list {
+            max-height: 200px;
+            overflow-y: auto;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+        }
+
+        .movement-item {
+            padding: 8px 0;
+            border-bottom: 1px solid #dee2e6;
+            font-size: 0.9em;
+        }
+
+        .timestamp {
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .score-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="/dashboard" class="back-btn">← Back to Dashboard</a>
+            <h1>📊 Interview Analysis Results</h1>
+            <p>Comprehensive analysis of your interview performance</p>
+        </div>
+
+        <div id="loadingSection" class="card">
+            <div class="loading">
+                <div>🔄 Loading your results...</div>
+                <div style="margin-top: 20px; color: #999;">Please wait while we fetch your analysis data.</div>
+            </div>
+        </div>
+
+        <div id="errorSection" class="card" style="display: none;">
+            <div class="error">
+                <h3>❌ Error Loading Results</h3>
+                <p id="errorMessage">Unable to load analysis results. Please try again later.</p>
+            </div>
+        </div>
+
+        <div id="resultsSection" style="display: none;">
+            <!-- Cheating Detection Results -->
+            <div class="card">
+                <h2>🔍 Behavioral Analysis</h2>
+                
+                <div id="cheatingStatus" class="cheating-status">
+                    <div id="cheatingMessage">Analyzing...</div>
+                </div>
+
+                <div class="score-container">
+                    <div class="score-card">
+                        <div id="cheatingScore" class="score-value">0</div>
+                        <div class="score-label">Cheating Score</div>
+                        <div class="progress-bar">
+                            <div id="cheatingProgress" class="progress-fill" style="width: 0%;">0%</div>
+                        </div>
+                    </div>
+                    
+                    <div class="score-card">
+                        <div id="eyeMovementScore" class="score-value">0%</div>
+                        <div class="score-label">Looking Away</div>
+                    </div>
+                    
+                    <div class="score-card">
+                        <div id="framesAnalyzed" class="score-value">0</div>
+                        <div class="score-label">Frames Analyzed</div>
+                    </div>
+                </div>
+
+                <div class="details-section">
+                    <h3>📋 Analysis Details</h3>
+                    <div class="detail-item">
+                        <span class="detail-label">Video Duration:</span>
+                        <span id="videoDuration" class="detail-value">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Analysis Timestamp:</span>
+                        <span id="analysisTime" class="detail-value">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Processing Status:</span>
+                        <span id="processingStatus" class="detail-value">-</span>
+                    </div>
+                </div>
+
+                <div id="suspiciousMovements" style="display: none;">
+                    <h3>⚠️ Suspicious Eye Movements</h3>
+                    <div class="movements-list" id="movementsList">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interview Session Details -->
+            <div class="card">
+                <h2>📝 Interview Session Details</h2>
+                
+                <div class="score-container">
+                    <div class="score-card">
+                        <div id="questionsAnswered" class="score-value">0/0</div>
+                        <div class="score-label">Questions Completed</div>
+                    </div>
+                    
+                    <div class="score-card">
+                        <div id="sessionDuration" class="score-value">00:00</div>
+                        <div class="score-label">Total Duration</div>
+                    </div>
+                    
+                    <div class="score-card">
+                        <div id="completionRate" class="score-value">0%</div>
+                        <div class="score-label">Completion Rate</div>
+                    </div>
+                </div>
+
+                <div class="details-section">
+                    <h3>📋 Session Information</h3>
+                    <div class="detail-item">
+                        <span class="detail-label">Session ID:</span>
+                        <span id="sessionId" class="detail-value">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Role Applied:</span>
+                        <span id="roleApplied" class="detail-value">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Interview Date:</span>
+                        <span id="interviewDate" class="detail-value">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">File Size:</span>
+                        <span id="fileSize" class="detail-value">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadResults();
+        });
+
+        async function loadResults() {
+            try {
+                const response = await fetch('/api/interview-results');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    showError(data.error);
+                    return;
+                }
+
+                displayResults(data);
+                
+            } catch (error) {
+                console.error('Error loading results:', error);
+                showError('Failed to load interview results. Please try again later.');
+            }
+        }
+
+        function showError(message) {
+            document.getElementById('loadingSection').style.display = 'none';
+            document.getElementById('errorSection').style.display = 'block';
+            document.getElementById('errorMessage').textContent = message;
+        }
+
+        function displayResults(data) {
+            document.getElementById('loadingSection').style.display = 'none';
+            document.getElementById('resultsSection').style.display = 'block';
+
+            const analysis = data.analysis;
+            const session = data.latest_session;
+
+            // Display cheating analysis
+            if (analysis && analysis.cheating_analysis) {
+                displayCheatingAnalysis(analysis.cheating_analysis);
+            }
+
+            // Display session details
+            if (session) {
+                displaySessionDetails(session);
+            }
+        }
+
+        function displayCheatingAnalysis(cheatingData) {
+            const isDetected = cheatingData.is_cheating_detected;
+            const score = Math.round(cheatingData.cheating_score || 0);
+            const lookingAwayPercentage = cheatingData.looking_away_percentage || 0;
+
+            // Update cheating status
+            const statusDiv = document.getElementById('cheatingStatus');
+            const messageDiv = document.getElementById('cheatingMessage');
+            
+            if (isDetected) {
+                statusDiv.className = 'cheating-status cheating-detected';
+                messageDiv.textContent = '⚠️ SUSPICIOUS BEHAVIOR DETECTED';
+            } else {
+                statusDiv.className = 'cheating-status no-cheating';
+                messageDiv.textContent = '✅ NO SUSPICIOUS BEHAVIOR DETECTED';
+            }
+
+            // Update scores
+            document.getElementById('cheatingScore').textContent = score;
+            document.getElementById('eyeMovementScore').textContent = `${lookingAwayPercentage.toFixed(1)}%`;
+            document.getElementById('framesAnalyzed').textContent = cheatingData.total_frames_analyzed || 0;
+
+            // Update progress bar
+            const progressBar = document.getElementById('cheatingProgress');
+            progressBar.style.width = `${score}%`;
+            progressBar.textContent = `${score}%`;
+            
+            if (score <= 30) {
+                progressBar.className = 'progress-fill progress-good';
+            } else if (score <= 60) {
+                progressBar.className = 'progress-fill progress-warning';
+            } else {
+                progressBar.className = 'progress-fill progress-danger';
+            }
+
+            // Update analysis details
+            document.getElementById('videoDuration').textContent = 
+                cheatingData.video_duration ? `${cheatingData.video_duration.toFixed(1)} seconds` : 'N/A';
+            document.getElementById('analysisTime').textContent = 
+                cheatingData.analysis_timestamp ? new Date(cheatingData.analysis_timestamp).toLocaleString() : 'N/A';
+            document.getElementById('processingStatus').textContent = 
+                cheatingData.error ? 'Error occurred' : 'Completed successfully';
+
+            // Display suspicious movements
+            if (cheatingData.suspicious_movements && cheatingData.suspicious_movements.length > 0) {
+                document.getElementById('suspiciousMovements').style.display = 'block';
+                
+                const movementsList = document.getElementById('movementsList');
+                movementsList.innerHTML = '';
+                
+                cheatingData.suspicious_movements.forEach(movement => {
+                    const item = document.createElement('div');
+                    item.className = 'movement-item';
+                    item.innerHTML = `
+                        <span class="timestamp">${movement.timestamp.toFixed(1)}s:</span>
+                        Eye movement detected (Left: ${movement.left_movement.toFixed(1)}px, Right: ${movement.right_movement.toFixed(1)}px)
+                    `;
+                    movementsList.appendChild(item);
+                });
+            }
+        }
+
+        function displaySessionDetails(session) {
+            // Calculate completion rate
+            const completionRate = session.total_questions > 0 ? 
+                Math.round((session.questions_answered / session.total_questions) * 100) : 0;
+
+            // Update session scores
+            document.getElementById('questionsAnswered').textContent = 
+                `${session.questions_answered}/${session.total_questions}`;
+            document.getElementById('sessionDuration').textContent = session.duration_formatted || '00:00';
+            
+            const completionEl = document.getElementById('completionRate');
+            completionEl.textContent = `${completionRate}%`;
+            
+            // Color code completion rate
+            if (completionRate >= 80) {
+                completionEl.className = 'score-value score-good';
+            } else if (completionRate >= 50) {
+                completionEl.className = 'score-value score-warning';
+            } else {
+                completionEl.className = 'score-value score-danger';
+            }
+
+            // Update session details
+            document.getElementById('sessionId').textContent = session.session_id || 'N/A';
+            document.getElementById('roleApplied').textContent = session.role_applied || 'N/A';
+            document.getElementById('interviewDate').textContent = 
+                session.start_time ? new Date(session.start_time).toLocaleDateString() : 'N/A';
+            document.getElementById('fileSize').textContent = 
+                session.file_size_mb ? `${session.file_size_mb} MB` : 'N/A';
+        }
+    </script>
+</body>
+</html>

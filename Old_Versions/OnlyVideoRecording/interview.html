@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Interviewer - Optimized 24 FPS</title>
+    <title>AI Interviewer - Web Version</title>
     <style>
         * {
             margin: 0;
@@ -46,17 +46,6 @@
             font-size: 1em;
         }
 
-        .optimization-badge {
-            display: inline-block;
-            background: linear-gradient(45deg, #56ab2f, #a8e6cf);
-            color: white;
-            padding: 6px 12px;
-            border-radius: 15px;
-            font-size: 0.8em;
-            font-weight: bold;
-            margin-top: 5px;
-        }
-
         .video-container {
             position: relative;
             margin: 20px auto;
@@ -96,19 +85,6 @@
             border-radius: 20px;
             font-weight: bold;
             font-size: 0.8em;
-            display: none;
-        }
-
-        .fps-indicator {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background: rgba(34,139,34,0.9);
-            color: white;
-            padding: 6px 10px;
-            border-radius: 15px;
-            font-weight: bold;
-            font-size: 0.7em;
             display: none;
         }
 
@@ -256,26 +232,6 @@
             font-weight: bold;
         }
 
-        .processing-notice {
-            background: #fff3cd;
-            color: #856404;
-            border: 1px solid #ffeaa7;
-            padding: 20px;
-            border-radius: 15px;
-            margin: 20px 0;
-            font-size: 1.1em;
-        }
-
-        .optimization-info {
-            background: #e7f3ff;
-            color: #0c5460;
-            border: 1px solid #bee5eb;
-            padding: 15px;
-            border-radius: 10px;
-            margin: 15px 0;
-            font-size: 0.9em;
-        }
-
         @media (max-width: 768px) {
             .container {
                 padding: 20px;
@@ -306,11 +262,6 @@
         <div class="header">
             <h1>🎯 AI Interviewer</h1>
             <p>Professional Interview Assessment System</p>
-            <div class="optimization-badge">24 FPS Optimized</div>
-        </div>
-
-        <div class="optimization-info">
-            ⚡ <strong>Performance Optimized:</strong> 24 FPS recording for faster processing and reduced computational load
         </div>
 
         <div class="video-container">
@@ -319,12 +270,11 @@
             <div id="recordingStatus" class="recording-status">
                 <span class="recording-indicator"></span>Recording Interview
             </div>
-            <div id="fpsIndicator" class="fps-indicator">24 FPS</div>
         </div>
 
         <div class="question-container fade-in">
             <div id="questionText" class="question-text">
-                Click "Start Interview" to begin your assessment session. The interview will be recorded at 24 FPS for optimal performance.
+                Click "Start Interview" to begin your assessment session. The entire interview will be recorded automatically.
             </div>
         </div>
 
@@ -336,7 +286,6 @@
             <button id="startBtn" class="btn btn-primary">🚀 Start Interview</button>
             <button id="nextBtn" class="btn btn-primary hidden">➡️ Next Question</button>
             <button id="finishBtn" class="btn btn-danger hidden">✅ Finish Interview</button>
-            <button id="dashboardBtn" class="btn btn-success hidden">📊 Go to Dashboard</button>
         </div>
 
         <div class="stats">
@@ -360,23 +309,18 @@
     </div>
 
     <script>
-        class OptimizedAIInterviewer {
+        class AIInterviewer {
             constructor() {
                 this.currentQuestionIndex = 0;
                 this.questions = [];
                 this.isRecording = false;
-                this.videoMediaRecorder = null;
-                this.audioMediaRecorder = null;
+                this.mediaRecorder = null;
                 this.videoStream = null;
-                this.audioStream = null;
-                this.videoChunks = [];
-                this.audioChunks = [];
+                this.recordedChunks = [];
                 this.sessionId = this.generateSessionId();
                 this.interviewStartTime = null;
                 this.questionTimings = [];
                 this.timerInterval = null;
-                this.isFinished = false;
-                this.targetFPS = 24; // Optimized frame rate
                 
                 this.initializeElements();
                 this.setupEventListeners();
@@ -393,13 +337,11 @@
                 this.videoElement = document.getElementById('videoElement');
                 this.statusOverlay = document.getElementById('statusOverlay');
                 this.recordingStatusEl = document.getElementById('recordingStatus');
-                this.fpsIndicator = document.getElementById('fpsIndicator');
                 this.questionText = document.getElementById('questionText');
                 this.progressFill = document.getElementById('progressFill');
                 this.startBtn = document.getElementById('startBtn');
                 this.nextBtn = document.getElementById('nextBtn');
                 this.finishBtn = document.getElementById('finishBtn');
-                this.dashboardBtn = document.getElementById('dashboardBtn');
                 this.currentQuestionEl = document.getElementById('currentQuestion');
                 this.totalQuestionsEl = document.getElementById('totalQuestions');
                 this.interviewStatusEl = document.getElementById('interviewStatus');
@@ -410,33 +352,22 @@
                 this.startBtn.addEventListener('click', () => this.startInterview());
                 this.nextBtn.addEventListener('click', () => this.nextQuestion());
                 this.finishBtn.addEventListener('click', () => this.finishInterview());
-                this.dashboardBtn.addEventListener('click', () => this.goToDashboard());
             }
 
             async initializeCamera() {
                 try {
-                    // Get separate video and audio streams for optimized recording
                     this.videoStream = await navigator.mediaDevices.getUserMedia({
                         video: { 
                             width: { ideal: 1280 },
-                            height: { ideal: 720 },
-                            frameRate: { ideal: this.targetFPS, max: this.targetFPS } // Force 24 FPS
+                            height: { ideal: 720 }
                         },
-                        audio: false  // Separate audio stream
-                    });
-
-                    this.audioStream = await navigator.mediaDevices.getUserMedia({
-                        video: false,
                         audio: {
                             echoCancellation: true,
                             noiseSuppression: true,
                             sampleRate: 44100
                         }
                     });
-
                     this.videoElement.srcObject = this.videoStream;
-                    console.log(`Camera initialized at ${this.targetFPS} FPS`);
-                    
                 } catch (error) {
                     console.error('Error accessing camera:', error);
                     this.showStatus('Camera access denied. Please allow camera and microphone permissions and refresh the page.');
@@ -460,7 +391,7 @@
                     this.questionTimings = [];
                     
                     // Initialize session on server
-                    const sessionResponse = await fetch('/api/start-session', {
+                    await fetch('/api/start-session', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ 
@@ -468,12 +399,9 @@
                             startTime: this.interviewStartTime.toISOString()
                         })
                     });
-                    
-                    const sessionData = await sessionResponse.json();
-                    console.log('Session started:', sessionData);
 
-                    // Start optimized recording
-                    await this.startOptimizedRecording();
+                    // Start recording immediately
+                    await this.startRecording();
                     
                     this.displayCurrentQuestion();
                     this.updateProgress();
@@ -483,7 +411,6 @@
                     
                     this.startBtn.classList.add('hidden');
                     this.interviewStatusEl.textContent = 'Recording';
-                    this.fpsIndicator.style.display = 'block';
                     
                 } catch (error) {
                     console.error('Error starting interview:', error);
@@ -538,95 +465,62 @@
                 this.updateSessionTimings();
             }
 
-            async startOptimizedRecording() {
+            async startRecording() {
                 try {
-                    if (!this.videoStream || !this.audioStream) {
-                        throw new Error('Video or audio stream not available');
+                    if (!this.videoStream) {
+                        throw new Error('Video stream not available');
                     }
 
-                    this.videoChunks = [];
-                    this.audioChunks = [];
+                    this.recordedChunks = [];
                     
-                    // Optimized video recording options for 24 FPS
-                    const videoOptions = {
-                        mimeType: 'video/webm;codecs=vp9',
-                        videoBitsPerSecond: 1500000, // Reduced bitrate for 24 FPS
-                    };
-
-                    // Audio recording options
-                    const audioOptions = {
-                        mimeType: 'audio/webm;codecs=opus',
-                        audioBitsPerSecond: 128000
+                    // Use high quality settings for the recording
+                    const options = {
+                        mimeType: 'video/webm;codecs=vp9,opus',
+                        videoBitsPerSecond: 2500000, // 2.5 Mbps for good quality
+                        audioBitsPerSecond: 128000   // 128 kbps for audio
                     };
                     
-                    // Fallback for codec support
-                    if (!MediaRecorder.isTypeSupported(videoOptions.mimeType)) {
-                        videoOptions.mimeType = 'video/webm';
-                    }
-                    if (!MediaRecorder.isTypeSupported(audioOptions.mimeType)) {
-                        audioOptions.mimeType = 'audio/webm';
+                    // Fallback to default if VP9 not supported
+                    if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+                        options.mimeType = 'video/webm';
                     }
 
-                    // Create separate recorders for video and audio
-                    this.videoMediaRecorder = new MediaRecorder(this.videoStream, videoOptions);
-                    this.audioMediaRecorder = new MediaRecorder(this.audioStream, audioOptions);
+                    this.mediaRecorder = new MediaRecorder(this.videoStream, options);
 
-                    // Video recorder events
-                    this.videoMediaRecorder.ondataavailable = (event) => {
+                    this.mediaRecorder.ondataavailable = (event) => {
                         if (event.data.size > 0) {
-                            this.videoChunks.push(event.data);
+                            this.recordedChunks.push(event.data);
                         }
                     };
 
-                    // Audio recorder events
-                    this.audioMediaRecorder.ondataavailable = (event) => {
-                        if (event.data.size > 0) {
-                            this.audioChunks.push(event.data);
-                        }
+                    this.mediaRecorder.onstop = () => {
+                        this.saveRecording();
                     };
 
-                    this.videoMediaRecorder.onstop = () => {
-                        this.saveOptimizedRecording();
-                    };
-
-                    // Start both recorders
-                    this.videoMediaRecorder.start(1000); // Collect data every second
-                    this.audioMediaRecorder.start(1000);
-                    
+                    this.mediaRecorder.start(1000); // Collect data every second
                     this.isRecording = true;
                     this.recordingStatusEl.style.display = 'block';
 
-                    console.log(`Started optimized recording at ${this.targetFPS} FPS`);
-
                 } catch (error) {
-                    console.error('Error starting optimized recording:', error);
+                    console.error('Error starting recording:', error);
                     this.showStatus('Failed to start recording. Please check your camera/microphone permissions.');
                 }
             }
 
-            async stopOptimizedRecording() {
-                if (this.videoMediaRecorder && this.audioMediaRecorder && this.isRecording) {
-                    this.videoMediaRecorder.stop();
-                    this.audioMediaRecorder.stop();
+            async stopRecording() {
+                if (this.mediaRecorder && this.isRecording) {
+                    this.mediaRecorder.stop();
                     this.isRecording = false;
                     this.recordingStatusEl.style.display = 'none';
-                    this.fpsIndicator.style.display = 'none';
                 }
             }
 
-            async saveOptimizedRecording() {
-                if (this.videoChunks.length === 0) return;
+            async saveRecording() {
+                if (this.recordedChunks.length === 0) return;
 
-                const videoBlob = new Blob(this.videoChunks, { type: 'video/webm' });
-                const audioBlob = this.audioChunks.length > 0 ? new Blob(this.audioChunks, { type: 'audio/webm' }) : null;
-                
+                const blob = new Blob(this.recordedChunks, { type: 'video/webm' });
                 const formData = new FormData();
-                formData.append('video', videoBlob, `interview_${this.sessionId}_24fps.webm`);
-                
-                if (audioBlob) {
-                    formData.append('audio', audioBlob, `interview_${this.sessionId}_audio.wav`);
-                }
-                
+                formData.append('video', blob, `interview_${this.sessionId}.webm`);
                 formData.append('sessionId', this.sessionId);
                 formData.append('questionTimings', JSON.stringify(this.questionTimings));
                 formData.append('endTime', new Date().toISOString());
@@ -638,9 +532,8 @@
                     });
 
                     if (response.ok) {
-                        const result = await response.json();
-                        console.log('Optimized recording saved successfully:', result);
-                        this.showStatus('Interview recording saved successfully! Processing optimized analysis...');
+                        console.log('Recording saved successfully');
+                        this.showStatus('Interview recording saved successfully!');
                     } else {
                         console.error('Failed to save recording');
                         this.showStatus('Warning: Recording may not have been saved properly.');
@@ -669,23 +562,20 @@
 
             async finishInterview() {
                 try {
-                    if (this.isFinished) return;
-                    this.isFinished = true;
-
                     // Stop timer
                     if (this.timerInterval) {
                         clearInterval(this.timerInterval);
                     }
 
-                    // Stop optimized recording
+                    // Stop recording
                     if (this.isRecording) {
-                        await this.stopOptimizedRecording();
-                        // Wait for recording to finish processing
-                        await new Promise(resolve => setTimeout(resolve, 2000));
+                        await this.stopRecording();
+                        // Wait a moment for the recording to finish processing
+                        await new Promise(resolve => setTimeout(resolve, 1000));
                     }
 
                     // Send completion signal to server
-                    const response = await fetch('/api/finish-interview', {
+                    await fetch('/api/finish-interview', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ 
@@ -696,52 +586,19 @@
                         })
                     });
 
-                    const result = await response.json();
-
                     // Stop camera streams
                     if (this.videoStream) {
                         this.videoStream.getTracks().forEach(track => track.stop());
                     }
-                    if (this.audioStream) {
-                        this.audioStream.getTracks().forEach(track => track.stop());
-                    }
 
                     this.interviewStatusEl.textContent = 'Completed';
                     this.finishBtn.classList.add('hidden');
-                    this.dashboardBtn.classList.remove('hidden');
-                    
-                    // Show optimized processing notice
-                    this.questionText.innerHTML = `
-                        <div class="processing-notice">
-                            <h3>🔄 Processing Your Optimized Interview</h3>
-                            <p>Your interview has been completed successfully at 24 FPS!</p>
-                            <p>We are now performing optimized analysis:</p>
-                            <ul style="text-align: left; margin-top: 10px;">
-                                <li>⚡ 3x faster eye movement tracking</li>
-                                <li>🎥 Efficient 24 FPS video analysis</li>
-                                <li>🎵 Separate audio stream processing</li>
-                                <li>📊 Performance-tuned behavioral evaluation</li>
-                            </ul>
-                            <p style="margin-top: 15px;"><strong>Processing time reduced by ~60% compared to standard analysis!</strong></p>
-                        </div>
-                    `;
-
-                    this.showStatus('Optimized interview completed! Redirecting to dashboard...');
-                    
-                    // Auto-redirect after 5 seconds
-                    setTimeout(() => {
-                        this.goToDashboard();
-                    }, 5000);
+                    this.showStatus('Interview completed and saved successfully! You can now close this page.');
 
                 } catch (error) {
                     console.error('Error finishing interview:', error);
-                    this.showStatus('Interview completed but there may have been an error. Please go to dashboard to check status.');
-                    this.dashboardBtn.classList.remove('hidden');
+                    this.showStatus('Interview completed but there may have been an error saving. Please contact support.');
                 }
-            }
-
-            goToDashboard() {
-                window.location.href = '/dashboard';
             }
 
             startTimer() {
@@ -784,10 +641,9 @@
             }
         }
 
-        // Initialize the optimized application when the page loads
+        // Initialize the application when the page loads
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('Initializing Optimized AI Interviewer (24 FPS)');
-            new OptimizedAIInterviewer();
+            new AIInterviewer();
         });
     </script>
 </body>

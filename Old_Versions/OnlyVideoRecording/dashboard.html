@@ -30,7 +30,6 @@
             padding: 30px;
             margin-bottom: 30px;
             text-align: center;
-            position: relative;
         }
 
         .header h1 {
@@ -45,9 +44,7 @@
         }
 
         .logout-btn {
-            position: absolute;
-            top: 20px;
-            right: 20px;
+            float: right;
             background: #ff4444;
             color: white;
             border: none;
@@ -55,12 +52,6 @@
             border-radius: 20px;
             cursor: pointer;
             font-size: 0.9em;
-            transition: all 0.3s ease;
-        }
-
-        .logout-btn:hover {
-            background: #cc3333;
-            transform: translateY(-2px);
         }
 
         .card {
@@ -114,8 +105,6 @@
             transition: all 0.3s ease;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             margin-right: 10px;
-            text-decoration: none;
-            display: inline-block;
         }
 
         .btn-primary {
@@ -125,11 +114,6 @@
 
         .btn-success {
             background: linear-gradient(45deg, #56ab2f, #a8e6cf);
-            color: white;
-        }
-
-        .btn-info {
-            background: linear-gradient(45deg, #2196F3, #21CBF3);
             color: white;
         }
 
@@ -186,23 +170,6 @@
         .hidden {
             display: none;
         }
-
-        .processing-status {
-            background: #fff3cd;
-            color: #856404;
-            border: 1px solid #ffeaa7;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
     </style>
 </head>
 <body>
@@ -251,28 +218,12 @@
             <div id="interviewSection" class="hidden">
                 <p>Your personalized interview is ready! Click below to start.</p>
                 <br>
-                <div class="action-buttons">
-                    <button class="btn btn-success" onclick="startInterview()">Start Interview</button>
-                </div>
+                <button class="btn btn-success" onclick="startInterview()">Start Interview</button>
             </div>
         </div>
 
         <div class="card">
-            <h2>📊 Results & Analysis</h2>
-            
-            <div id="processingStatus" class="processing-status hidden">
-                <div id="processingMessage">Checking analysis status...</div>
-                <div style="margin-top: 10px;">
-                    <div class="action-buttons">
-                        <button id="checkResultsBtn" class="btn btn-info" onclick="checkResults()">Check Results</button>
-                        <a id="viewResultsBtn" href="/results" class="btn btn-success hidden">View Results</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="card">
-            <h2>📈 Previous Interviews</h2>
+            <h2>📊 Previous Interviews</h2>
             <div id="sessionsList">
                 Loading previous interviews...
             </div>
@@ -281,7 +232,6 @@
 
     <script>
         let currentUser = null;
-        let processingCheckInterval = null;
 
         // Load user data on page load
         document.addEventListener('DOMContentLoaded', async () => {
@@ -289,7 +239,6 @@
             await loadProfile();
             await checkInterviewStatus();
             await loadSessions();
-            await checkProcessingStatus();
         });
 
         async function loadCurrentUser() {
@@ -352,48 +301,6 @@
                 statusDiv.className = 'interview-status status-not-ready';
                 statusDiv.textContent = 'Error checking interview status.';
             }
-        }
-
-        async function checkProcessingStatus() {
-            try {
-                const response = await fetch('/api/processing-status');
-                const data = await response.json();
-                
-                const processingDiv = document.getElementById('processingStatus');
-                const messageDiv = document.getElementById('processingMessage');
-                const checkBtn = document.getElementById('checkResultsBtn');
-                const viewBtn = document.getElementById('viewResultsBtn');
-                
-                processingDiv.classList.remove('hidden');
-                
-                if (data.processing_completed) {
-                    messageDiv.textContent = 'Analysis completed! Your interview results are ready.';
-                    checkBtn.classList.add('hidden');
-                    viewBtn.classList.remove('hidden');
-                    
-                    if (processingCheckInterval) {
-                        clearInterval(processingCheckInterval);
-                        processingCheckInterval = null;
-                    }
-                } else {
-                    messageDiv.textContent = 'Your interview is being processed. This may take a few minutes.';
-                    checkBtn.classList.remove('hidden');
-                    viewBtn.classList.add('hidden');
-                    
-                    // Start polling for status updates
-                    if (!processingCheckInterval) {
-                        processingCheckInterval = setInterval(checkProcessingStatus, 10000); // Check every 10 seconds
-                    }
-                }
-            } catch (error) {
-                console.error('Error checking processing status:', error);
-                const processingDiv = document.getElementById('processingStatus');
-                processingDiv.classList.add('hidden');
-            }
-        }
-
-        async function checkResults() {
-            await checkProcessingStatus();
         }
 
         async function loadSessions() {
@@ -464,36 +371,9 @@
 
         async function logout() {
             try {
-                const response = await fetch('/api/logout', { 
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    // Clear any intervals
-                    if (processingCheckInterval) {
-                        clearInterval(processingCheckInterval);
-                    }
-                    
-                    // Clear any local storage if used
-                    if (localStorage) {
-                        localStorage.clear();
-                    }
-                    
-                    // Redirect to login
-                    window.location.href = '/login';
-                } else {
-                    console.error('Logout failed:', data);
-                    // Force redirect anyway
-                    window.location.href = '/login';
-                }
+                await fetch('/api/logout', { method: 'POST' });
+                window.location.href = '/login';
             } catch (error) {
-                console.error('Logout error:', error);
-                // Force redirect on error
                 window.location.href = '/login';
             }
         }
@@ -511,13 +391,6 @@
             successDiv.style.display = 'block';
             document.getElementById('errorMessage').style.display = 'none';
         }
-
-        // Clean up intervals when page unloads
-        window.addEventListener('beforeunload', () => {
-            if (processingCheckInterval) {
-                clearInterval(processingCheckInterval);
-            }
-        });
     </script>
 </body>
 </html>
