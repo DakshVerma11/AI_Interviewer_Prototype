@@ -107,7 +107,7 @@ def run_audio_processing(session_id, username, audio_path, base_dir):
     session_dir = os.path.join(user_dir, 'interview', session_id)
     
     # Get HF token from environment or config
-    hf_token = "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"
+    hf_token = "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"
     
     # Update processing status
     status_path = os.path.join(session_dir, 'processing_status.json')
