@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Interview Audio Upload</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #667eea, #764ba2, #f7971e);
+      background-size: 400% 400%;
+      animation: gradientBG 15s ease infinite;
+    }
+
+    @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .upload-card {
+      background: linear-gradient(to bottom right, #ffffff, #f9f9f9);
+      padding: 2.5rem 3rem;
+      border-radius: 16px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+      text-align: center;
+      width: 100%;
+      max-width: 450px;
+      transition: transform 0.3s ease;
+    }
+
+    .upload-card:hover {
+      transform: translateY(-5px);
+    }
+
+    .upload-card h2 {
+      color: #222;
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .upload-card p {
+      color: #555;
+      font-size: 1rem;
+      margin-bottom: 1.8rem;
+    }
+
+    input[type="file"] {
+      font-size: 0.95rem;
+      padding: 0.6rem;
+      margin-bottom: 1.5rem;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      width: 100%;
+    }
+
+    button {
+      background: linear-gradient(to right, #ff416c, #ff4b2b);
+      color: white;
+      border: none;
+      padding: 0.7rem 1.5rem;
+      font-size: 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background: linear-gradient(to right, #ff4b2b, #ff416c);
+    }
+  </style>
+</head>
+<body>
+  <div class="upload-card">
+    <h2>Upload Interview Audio</h2>
+    <p>Please upload a <strong>.wav</strong> file of your interview for analysis.</p>
+    <form method="POST" action="/submit_audio" enctype="multipart/form-data">
+      <input type="file" name="audio" accept=".wav" required><br>
+      <button type="submit">Analyze</button>
+    </form>
+  </div>
+</body>
+</html>
