@@ -1,6 +1,3 @@
-Here's the revised version of your document with the links added for the presentation and demo video at the beginning:
-
----
 
 # AI-Powered Virtual Interviewer Platform
 
