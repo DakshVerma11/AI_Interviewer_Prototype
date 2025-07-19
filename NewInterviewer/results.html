@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Interviewer - Results</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            padding: 30px;
+            margin-bottom: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9em;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .card h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        .score-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .score-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            border-left: 5px solid #667eea;
+        }
+
+        .score-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .score-good {
+            color: #28a745;
+        }
+
+        .score-warning {
+            color: #ffc107;
+        }
+
+        .score-danger {
+            color: #dc3545;
+        }
+
+        .score-label {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .cheating-status {
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .cheating-detected {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+        }
+
+        .no-cheating {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+        }
+
+        .details-section {
+            margin-top: 20px;
+        }
+
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .detail-label {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .detail-value {
+            color: #666;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #666;
+            font-size: 1.2em;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .progress-bar {
+            background: #e9ecef;
+            border-radius: 10px;
+            height: 20px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .progress-good {
+            background: linear-gradient(45deg, #28a745, #20c997);
+        }
+
+        .progress-warning {
+            background: linear-gradient(45deg, #ffc107, #fd7e14);
+        }
+
+        .progress-danger {
+            background: linear-gradient(45deg, #dc3545, #e83e8c);
+        }
+
+        .movements-list {
+            max-height: 200px;
+            overflow-y: auto;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+        }
+
+        .movement-item {
+            padding: 8px 0;
+            border-bottom: 1px solid #dee2e6;
+            font-size: 0.9em;
+        }
+
+        .timestamp {
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        /* Audio Analysis Styles */
+        .transcript-container {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .transcript-item {
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+        }
+        
+        .transcript-interviewer {
+            background: #e7f3ff;
+            border-left: 4px solid #007bff;
+        }
+        
+        .transcript-candidate {
+            background: #f3f9ec;
+            border-left: 4px solid #28a745;
+        }
+        
+        .speaker-label {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .fillers-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .filler-tag {
+            background: #ffe3e3;
+            color: #d63031;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.9em;
+        }
+
+        .no-data-message {
+            text-align: center;
+            padding: 30px;
+            color: #666;
+            font-style: italic;
+        }
+
+        /* Added CSS for new features */
+        .feedback-item {
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            position: relative;
+        }
+        
+        .feedback-positive {
+            background-color: #d4edda;
+            border-left: 5px solid #28a745;
+        }
+        
+        .feedback-neutral {
+            background-color: #fff3cd;
+            border-left: 5px solid #ffc107;
+        }
+        
+        .feedback-negative {
+            background-color: #f8d7da;
+            border-left: 5px solid #dc3545;
+        }
+        
+        .feedback-category {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .question-item {
+            background-color: #f8f9fa;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            border-left: 5px solid #6c757d;
+        }
+        
+        .question-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .question-number {
+            font-weight: bold;
+            background-color: #667eea;
+            color: white;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            flex-shrink: 0;
+        }
+        
+        .question-text {
+            flex-grow: 1;
+            font-weight: bold;
+        }
+        
+        .question-time {
+            color: #666;
+            margin-left: 10px;
+        }
+        
+        .question-scores {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .score-pill {
+            padding: 5px 10px;
+            background-color: #e9ecef;
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+        }
+        
+        .score-pill-label {
+            margin-right: 5px;
+        }
+        
+        .score-pill-value {
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .score-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="/dashboard" class="back-btn">← Back to Dashboard</a>
+            <h1>📊 Interview Analysis Results</h1>
+            <p>Comprehensive analysis of your interview performance</p>
+        </div>
+
+        <div id="loadingSection" class="card">
+            <div class="loading">
+                <div>🔄 Loading your results...</div>
+                <div style="margin-top: 20px; color: #999;">Please wait while we fetch your analysis data.</div>
+            </div>
+        </div>
+        
+        <div id="errorSection" class="card" style="display: none;">
+            <!--  Error message will be displayed here
+            <div class="error">
+                <h3>❌ Error Loading Results</h3>
+                <p id="errorMessage">Unable to load analysis results. Please try again later.</p>
+            </div>
+             -->
+        </div>
+
+        <div id="resultsSection" style="display: none;">
+            <!-- Cheating Detection Results -->
+            <div class="card">
+                <h2>🔍 Behavioral Analysis</h2>
+                
+                <div id="cheatingStatus" class="cheating-status">
+                    <div id="cheatingMessage">Analyzing...</div>
+                </div>
+
+                <div class="score-container">
+                    <div class="score-card">
+                        <div id="cheatingScore" class="score-value">0</div>
+                        <div class="score-label">Cheating Score</div>
+                        <div class="progress-bar">
+                            <div id="cheatingProgress" class="progress-fill" style="width: 0%;">0%</div>
+                        </div>
+                    </div>
+                    
+                    <div class="score-card">
+                        <div id="eyeMovementScore" class="score-value">0%</div>
+                        <div class="score-label">Looking Away</div>
+                    </div>
+                    
+                    <div class="score-card">
+                        <div id="framesAnalyzed" class="score-value">0</div>
+                        <div class="score-label">Frames Analyzed</div>
+                    </div>
+                </div>
+
+                <div class="details-section">
+                    <h3>📋 Analysis Details</h3>
+                    <div class="detail-item">
+                        <span class="detail-label">Video Duration:</span>
+                        <span id="videoDuration" class="detail-value">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Analysis Timestamp:</span>
+                        <span id="analysisTime" class="detail-value">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Processing Status:</span>
+                        <span id="processingStatus" class="detail-value">-</span>
+                    </div>
+                </div>
+
+                <div id="suspiciousMovements" style="display: none;">
+                    <h3>⚠️ Suspicious Eye Movements</h3>
+                    <div class="movements-list" id="movementsList">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Speech Analysis Section -->
+            <div class="card" id="audioAnalysisSection" style="display: none;">
+                <h2>🎤 Speech Analysis</h2>
+                
+                <div class="score-container">
+                    <div class="score-card">
+                        <div id="speechRate" class="score-value">0</div>
+                        <div class="score-label">Words Per Minute</div>
+                    </div>
+                    
+                    <div class="score-card">
+                        <div id="vocalConfidence" class="score-value">0%</div>
+                        <div class="score-label">Vocal Confidence</div>
+                    </div>
+                    
+                    <div class="score-card">
+                        <div id="clarityScore" class="score-value">0%</div>
+                        <div class="score-label">Clarity Score</div>
+                    </div>
+                </div>
+
+                <div class="details-section">
+                    <h3>🗣️ Speech Metrics</h3>
+                    <div class="detail-item">
+                        <span class="detail-label">Tone:</span>
+                        <span id="speechTone" class="detail-value">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Pitch (Hz):</span>
+                        <span id="pitchHz" class="detail-value">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Relevance Score:</span>
+                        <span id="relevanceScore" class="detail-value">-</span>
+                    </div>
+                </div>
+                
+                <div class="transcript-section">
+                    <h3>📝 Transcripts</h3>
+                    <div id="transcriptContainer" class="transcript-container">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+                
+                <div class="fillers-section">
+                    <h3>⚠️ Filler Words</h3>
+                    <div id="fillerWordsContainer" class="fillers-container">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interview Session Details 
+            <div class="card">
+                <h2>📝 Interview Session Details</h2>
+                
+                <div class="score-container">
+                    <div class="score-card">
+                        <div id="questionsAnswered" class="score-value">0/0</div>
+                        <div class="score-label">Questions Completed</div>
+                    </div>
+                    
+                    <div class="score-card">
+                        <div id="sessionDuration" class="score-value">00:00</div>
+                        <div class="score-label">Total Duration</div>
+                    </div>
+                    
+                    <div class="score-card">
+                        <div id="completionRate" class="score-value">0%</div>
+                        <div class="score-label">Completion Rate</div>
+                    </div>
+                </div>
+
+                <div class="details-section">
+                    <h3>📋 Session Information</h3>
+                    <div class="detail-item">
+                        <span class="detail-label">Session ID:</span>
+                        <span id="sessionId" class="detail-value">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Role Applied:</span>
+                        <span id="roleApplied" class="detail-value">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Interview Date:</span>
+                        <span id="interviewDate" class="detail-value">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">File Size:</span>
+                        <span id="fileSize" class="detail-value">-</span>
+                    </div>
+                </div>
+                -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadFinalResults();
+        });
+
+        async function loadFinalResults() {
+            try {
+                // Show loading indicator
+                document.getElementById('loadingSection').style.display = 'block';
+                document.getElementById('resultsSection').style.display = 'none';
+                document.getElementById('errorSection').style.display = 'none';
+                
+                // Fetch comprehensive results
+                const response = await fetch('/api/final-interview-results');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const results = await response.json();
+                
+                if (results.error) {
+                    showError(results.error);
+                    return;
+                }
+
+                // Hide loading, show results
+                document.getElementById('loadingSection').style.display = 'none';
+                document.getElementById('resultsSection').style.display = 'block';
+                
+                // Display comprehensive results
+                displayComprehensiveResults(results);
+                
+            } catch (error) {
+                console.error('Error loading results:', error);
+                showError('Failed to load interview results. Please try again later.');
+            }
+        }
+
+        function showError(message) {
+            document.getElementById('loadingSection').style.display = 'none';
+            document.getElementById('errorSection').style.display = 'block';
+            document.getElementById('errorMessage').textContent = message;
+        }
+
+        function displayComprehensiveResults(results) {
+            // Add a new section for overall scores at the top
+            const resultsSection = document.getElementById('resultsSection');
+            
+            // Create a new overall scores card at the top
+            const overallScoresCard = document.createElement('div');
+            overallScoresCard.className = 'card';
+            overallScoresCard.innerHTML = `
+                <h2>🏆 Overall Interview Performance</h2>
+                <div class="score-container">
+                    <div class="score-card">
+                        <div class="score-value ${getScoreClass(results.overall_scores.overall_score)}">${results.overall_scores.overall_score}%</div>
+                        <div class="score-label">Overall Score</div>
+                    </div>
+                    
+                    <div class="score-card">
+                        <div class="score-value ${getScoreClass(results.overall_scores.integrity_score)}">${results.overall_scores.integrity_score}%</div>
+                        <div class="score-label">Integrity</div>
+                    </div>
+                    
+                    <div class="score-card">
+                        <div class="score-value ${getScoreClass(results.overall_scores.content_score)}">${results.overall_scores.content_score}%</div>
+                        <div class="score-label">Content</div>
+                    </div>
+                    
+                    <div class="score-card">
+                        <div class="score-value ${getScoreClass(results.overall_scores.delivery_score)}">${results.overall_scores.delivery_score}%</div>
+                        <div class="score-label">Delivery</div>
+                    </div>
+                </div>
+
+                <div class="details-section">
+                    <h3>📋 Interview Summary</h3>
+                    <div class="detail-item">
+                        <span class="detail-label">Role Applied:</span>
+                        <span class="detail-value">${results.role_applied || 'Not specified'}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Interview Date:</span>
+                        <span class="detail-value">${new Date(results.interview_date).toLocaleString()}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Duration:</span>
+                        <span class="detail-value">${results.duration}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Questions:</span>
+                        <span class="detail-value">${results.questions_answered}/${results.questions_total}</span>
+                    </div>
+                </div>
+            `;
+            
+            // Insert at the beginning of results section
+            resultsSection.insertBefore(overallScoresCard, resultsSection.firstChild);
+            
+            // Add feedback section
+            const feedbackCard = document.createElement('div');
+            feedbackCard.className = 'card';
+            feedbackCard.innerHTML = `
+                <h2>💬 Personalized Feedback</h2>
+                <div id="feedbackList"></div>
+            `;
+            
+            resultsSection.insertBefore(feedbackCard, resultsSection.firstChild.nextSibling);
+            
+            // Populate feedback
+            const feedbackList = document.getElementById('feedbackList');
+            results.feedback.forEach(item => {
+                const feedbackItem = document.createElement('div');
+                feedbackItem.className = `feedback-item feedback-${item.type}`;
+                feedbackItem.innerHTML = `
+                    <div class="feedback-category">${item.category}</div>
+                    <div class="feedback-message">${item.message}</div>
+                `;
+                feedbackList.appendChild(feedbackItem);
+            });
+            
+            // Add question performance section
+            if (results.question_performance && results.question_performance.length > 0) {
+                const questionsCard = document.createElement('div');
+                questionsCard.className = 'card';
+                questionsCard.innerHTML = `
+                    <h2>❓ Question-by-Question Analysis</h2>
+                    <div id="questionsList"></div>
+                `;
+                
+                resultsSection.insertBefore(questionsCard, feedbackCard.nextSibling);
+                
+                // Populate questions list
+                const questionsList = document.getElementById('questionsList');
+                results.question_performance.forEach(question => {
+                    const questionItem = document.createElement('div');
+                    questionItem.className = 'question-item';
+                    
+                    // Format time
+                    const minutes = Math.floor(question.time_from_start / 60);
+                    const seconds = question.time_from_start % 60;
+                    const timeFormatted = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                    
+                    questionItem.innerHTML = `
+                        <div class="question-header">
+                            <div class="question-number">Q${question.question_index + 1}</div>
+                            <div class="question-text">${question.question}</div>
+                            <div class="question-time">${timeFormatted}</div>
+                        </div>
+                        <div class="question-scores">
+                            <div class="score-pill">
+                                <span class="score-pill-label">Overall:</span>
+                                <span class="score-pill-value ${getScoreClass(question.scores.overall * 100)}">${(question.scores.overall * 100).toFixed(0)}%</span>
+                            </div>
+                            <div class="score-pill">
+                                <span class="score-pill-label">Relevance:</span>
+                                <span class="score-pill-value ${getScoreClass(question.scores.relevance * 100)}">${(question.scores.relevance * 100).toFixed(0)}%</span>
+                            </div>
+                            <div class="score-pill">
+                                <span class="score-pill-label">Confidence:</span>
+                                <span class="score-pill-value ${getScoreClass(question.scores.confidence * 100)}">${(question.scores.confidence * 100).toFixed(0)}%</span>
+                            </div>
+                            <div class="score-pill">
+                                <span class="score-pill-label">Clarity:</span>
+                                <span class="score-pill-value ${getScoreClass(question.scores.clarity * 100)}">${(question.scores.clarity * 100).toFixed(0)}%</span>
+                            </div>
+                        </div>
+                    `;
+                    
+                    questionsList.appendChild(questionItem);
+                });
+            }
+            
+            // Update the existing cheating analysis section if available
+            if (results.cheating_analysis) {
+                displayCheatingAnalysis(results.cheating_analysis);
+            }
+            
+            // Update the existing audio analysis section if available
+            if (results.audio_analysis) {
+                displayAudioAnalysis(results.audio_analysis);
+            }
+            
+            // Update session details
+            displaySessionDetails({
+                session_id: results.session_id,
+                total_questions: results.questions_total,
+                questions_answered: results.questions_answered,
+                duration_formatted: results.duration,
+                role_applied: results.role_applied,
+                start_time: results.interview_date
+            });
+        }
+
+        function getScoreClass(score) {
+            if (score >= 80) return 'score-good';
+            if (score >= 60) return 'score-warning';
+            return 'score-danger';
+        }
+
+        function displayCheatingAnalysis(cheatingData) {
+            const isDetected = cheatingData.is_cheating_detected;
+            const score = Math.round(cheatingData.cheating_score || 0);
+            const lookingAwayPercentage = cheatingData.looking_away_percentage || 0;
+
+            // Update cheating status
+            const statusDiv = document.getElementById('cheatingStatus');
+            const messageDiv = document.getElementById('cheatingMessage');
+            
+            if (isDetected) {
+                statusDiv.className = 'cheating-status cheating-detected';
+                messageDiv.textContent = '⚠️ SUSPICIOUS BEHAVIOR DETECTED';
+            } else {
+                statusDiv.className = 'cheating-status no-cheating';
+                messageDiv.textContent = '✅ NO SUSPICIOUS BEHAVIOR DETECTED';
+            }
+
+            // Update scores
+            document.getElementById('cheatingScore').textContent = score;
+            document.getElementById('eyeMovementScore').textContent = `${lookingAwayPercentage.toFixed(1)}%`;
+            document.getElementById('framesAnalyzed').textContent = cheatingData.total_frames_analyzed || 0;
+
+            // Update progress bar
+            const progressBar = document.getElementById('cheatingProgress');
+            progressBar.style.width = `${score}%`;
+            progressBar.textContent = `${score}%`;
+            
+            if (score <= 30) {
+                progressBar.className = 'progress-fill progress-good';
+            } else if (score <= 60) {
+                progressBar.className = 'progress-fill progress-warning';
+            } else {
+                progressBar.className = 'progress-fill progress-danger';
+            }
+
+            // Update analysis details
+            document.getElementById('videoDuration').textContent = 
+                cheatingData.video_duration ? `${cheatingData.video_duration.toFixed(1)} seconds` : 'N/A';
+            document.getElementById('analysisTime').textContent = 
+                cheatingData.analysis_timestamp ? new Date(cheatingData.analysis_timestamp).toLocaleString() : 'N/A';
+            document.getElementById('processingStatus').textContent = 
+                cheatingData.error ? 'Error occurred' : 'Completed successfully';
+
+            // Display suspicious movements
+            if (cheatingData.suspicious_movements && cheatingData.suspicious_movements.length > 0) {
+                document.getElementById('suspiciousMovements').style.display = 'block';
+                
+                const movementsList = document.getElementById('movementsList');
+                movementsList.innerHTML = '';
+                
+                cheatingData.suspicious_movements.forEach(movement => {
+                    const item = document.createElement('div');
+                    item.className = 'movement-item';
+                    item.innerHTML = `
+                        <span class="timestamp">${movement.timestamp.toFixed(1)}s:</span>
+                        Eye movement detected (Left: ${movement.left_movement.toFixed(1)}px, Right: ${movement.right_movement.toFixed(1)}px)
+                    `;
+                    movementsList.appendChild(item);
+                });
+            }
+        }
+
+        function displayAudioAnalysis(audioData) {
+            const audioSection = document.getElementById('audioAnalysisSection');
+            audioSection.style.display = 'block';
+            
+            // Check if we have valid data
+            if (!audioData.metrics) {
+                audioSection.innerHTML = `
+                    <h2>🎤 Speech Analysis</h2>
+                    <div class="no-data-message">Speech analysis data not available yet. Please try again later.</div>
+                `;
+                return;
+            }
+            
+            const metrics = audioData.metrics;
+            
+            // Update metrics values
+            document.getElementById('speechRate').textContent = metrics.rate_wpm || 0;
+            
+            const confidenceValue = metrics.vocal_confidence ? 
+                (metrics.vocal_confidence * 100).toFixed(0) : 0;
+            document.getElementById('vocalConfidence').textContent = `${confidenceValue}%`;
+            
+            const clarityValue = metrics.clarity ? 
+                (metrics.clarity * 100).toFixed(0) : 0;
+            document.getElementById('clarityScore').textContent = `${clarityValue}%`;
+            
+            // Update details
+            if (metrics.tone) {
+                const toneConfidence = (metrics.tone.confidence * 100).toFixed(0);
+                document.getElementById('speechTone').textContent = 
+                    `${metrics.tone.label} (${toneConfidence}% confidence)`;
+            } else {
+                document.getElementById('speechTone').textContent = 'N/A';
+            }
+            
+            document.getElementById('pitchHz').textContent = 
+                metrics.pitch_hz ? metrics.pitch_hz.toFixed(1) : 'N/A';
+            document.getElementById('relevanceScore').textContent = 
+                metrics.relevance ? `${(metrics.relevance * 100).toFixed(0)}%` : 'N/A';
+            
+            // Display transcripts
+            const transcriptContainer = document.getElementById('transcriptContainer');
+            transcriptContainer.innerHTML = '';
+            
+            if (audioData.transcripts && Object.keys(audioData.transcripts).length > 0) {
+                Object.entries(audioData.transcripts).forEach(([speaker, text], index) => {
+                    const isInterviewer = speaker.toLowerCase().includes('interviewer') || index === 0;
+                    
+                    const transcriptDiv = document.createElement('div');
+                    transcriptDiv.className = `transcript-item ${isInterviewer ? 'transcript-interviewer' : 'transcript-candidate'}`;
+                    
+                    const speakerDiv = document.createElement('div');
+                    speakerDiv.className = 'speaker-label';
+                    speakerDiv.textContent = isInterviewer ? 'Interviewer' : 'Candidate';
+                    
+                    const textDiv = document.createElement('div');
+                    textDiv.textContent = text;
+                    
+                    transcriptDiv.appendChild(speakerDiv);
+                    transcriptDiv.appendChild(textDiv);
+                    transcriptContainer.appendChild(transcriptDiv);
+                });
+            } else {
+                transcriptContainer.innerHTML = '<div class="no-data-message">No transcripts available</div>';
+            }
+            
+            // Display filler words
+            const fillerContainer = document.getElementById('fillerWordsContainer');
+            fillerContainer.innerHTML = '';
+            
+            if (metrics.fillers && Object.keys(metrics.fillers).length > 0) {
+                let hasFillers = false;
+                
+                Object.entries(metrics.fillers).forEach(([word, count]) => {
+                    if (count > 0) {
+                        hasFillers = true;
+                        const fillerTag = document.createElement('div');
+                        fillerTag.className = 'filler-tag';
+                        fillerTag.textContent = `${word}: ${count}`;
+                        fillerContainer.appendChild(fillerTag);
+                    }
+                });
+                
+                if (!hasFillers) {
+                    fillerContainer.innerHTML = '<p style="color: #28a745; font-weight: bold;">No filler words detected. Great job!</p>';
+                }
+            } else {
+                fillerContainer.innerHTML = '<div class="no-data-message">Filler word analysis not available</div>';
+            }
+        }
+
+        function displaySessionDetails(session) {
+            // Calculate completion rate
+            const completionRate = session.total_questions > 0 ? 
+                Math.round((session.questions_answered / session.total_questions) * 100) : 0;
+
+            // Update session scores
+            document.getElementById('questionsAnswered').textContent = 
+                `${session.questions_answered}/${session.total_questions}`;
+            document.getElementById('sessionDuration').textContent = session.duration_formatted || '00:00';
+            
+            const completionEl = document.getElementById('completionRate');
+            completionEl.textContent = `${completionRate}%`;
+            
+            // Color code completion rate
+            if (completionRate >= 80) {
+                completionEl.className = 'score-value score-good';
+            } else if (completionRate >= 50) {
+                completionEl.className = 'score-value score-warning';
+            } else {
+                completionEl.className = 'score-value score-danger';
+            }
+
+            // Update session details
+            document.getElementById('sessionId').textContent = session.session_id || 'N/A';
+            document.getElementById('roleApplied').textContent = session.role_applied || 'N/A';
+            document.getElementById('interviewDate').textContent = 
+                session.start_time ? new Date(session.start_time).toLocaleDateString() : 'N/A';
+            document.getElementById('fileSize').textContent = 
+                session.file_size_mb ? `${session.file_size_mb} MB` : 'N/A';
+        }
+    </script>
+</body>
+</html>
