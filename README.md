@@ -6,7 +6,7 @@
 ## Links
 
 * **[Presentation](https://docs.google.com/presentation/d/16DFZeK78ABYQ3xu92gWPgLPZd-nJa563J7Zev1EX4-4/edit?usp=sharing)**
-* **[Demo Video](https://drive.google.com/file/d/1CcqulM4f1Y61u25SzAks37AI1bO_kmnG/view?usp=sharing)**
+* **[Demo Video](https://www.youtube.com/watch?v=CAdY-7bwW7E)**
 
 ---
 
@@ -44,25 +44,6 @@ The AI-Powered Virtual Interviewer Platform is an innovative web application des
 * **Async Processing:** Python threading for video analysis
 * **Data:** File-based storage per user (scalable to database in production)
 * **Security:** SHA256 password hashing, session cookies
-
----
-
-## Project Structure
-
-```
-AI-Interviewer/
-│
-├── app.py                # Flask backend with API routes
-├── dashboard.html        # User dashboard (profile, results, interview status)
-├── interview.html        # Main interview interface (video recording, questions)
-├── login.html            # Login page
-├── register.html         # Registration page
-├── Users/                # Per-user data (created after registration)
-│    └── <username>/      # User's files (resume, interview, analysis)
-│
-├── logindetails.csv      # User registry (username, email, hashed password)
-└── ... (support files)
-```
 
 ---
 
@@ -109,8 +90,9 @@ AI-Interviewer/
 
 ## Demo
 
-* [GitHub Repository](https://github.com/DakshVerma11/CodeClash2.0_Prototype)
-* [Demo Video](https://drive.google.com/file/d/1CcqulM4f1Y61u25SzAks37AI1bO_kmnG/view?usp=sharing)
+* **[Presentation](https://docs.google.com/presentation/d/16DFZeK78ABYQ3xu92gWPgLPZd-nJa563J7Zev1EX4-4/edit?usp=sharing)**
+* **[Demo Video](https://www.youtube.com/watch?v=CAdY-7bwW7E)**
+
 
 ---
 
@@ -143,12 +125,7 @@ This project is released under the MIT License.
 ## Contact
 
 * **Project Lead:** [Daksh Verma](https://github.com/DakshVerma11)
-* **GitHub:** [https://github.com/DakshVerma11/CodeClash2.0\_Prototype](https://github.com/DakshVerma11/CodeClash2.0_Prototype)
 
 ---
 
 *Empowering every student to ace their interviews and every recruiter to hire with confidence.*
-
----
-
-This should help make the links easily accessible right at the start of the document! Let me know if you need any other changes.
